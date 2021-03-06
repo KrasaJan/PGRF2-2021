@@ -1,4 +1,4 @@
-package streda_16_35_c05.view;
+package view;
 
 import javax.swing.*;
 import java.awt.*;

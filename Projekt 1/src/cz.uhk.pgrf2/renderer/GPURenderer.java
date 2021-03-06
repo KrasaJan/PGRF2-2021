@@ -1,10 +1,14 @@
-package streda_16_35_c05.renderer;
+package renderer;
 
+import model.Element;
+import model.Vertex;
 import transforms.Mat4;
+
+import java.util.List;
 
 public interface GPURenderer {
 
-    void draw();
+    void draw(List<Element> elements, List<Integer> indexBuffer, List<Vertex> vertexBuffer);
 
     void clear();
 

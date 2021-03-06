@@ -1,29 +1,64 @@
-package streda_16_35_c05.controller;
+package controller;
 
-import streda_16_35_c05.rasterize.Raster;
-import streda_16_35_c05.renderer.GPURenderer;
-import streda_16_35_c05.renderer.RendererZBuffer;
-import streda_16_35_c05.view.Panel;
+import model.Element;
+import model.TopologyType;
+import model.Vertex;
+import rasterize.Raster;
+import renderer.GPURenderer;
+import renderer.RendererZBuffer;
 import transforms.*;
+import view.Panel;
 
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Controller3D {
 
     private final Panel panel;
-    private final Raster raster;
+    private final Raster<Integer> imageRaster;
     private final GPURenderer renderer;
+
+    private final List<Element> elementBuffer;
+    private final List<Integer> indexBuffer;
+    private final List<Vertex> vertexBuffer;
 
     private Mat4 model, projection;
     private Camera camera;
 
     public Controller3D(Panel panel) {
         this.panel = panel;
-        this.raster = panel.getRaster();
-        this.renderer = new RendererZBuffer(raster);
+        this.imageRaster = panel.getRaster();
+        this.renderer = new RendererZBuffer(imageRaster);
+
+        elementBuffer = new ArrayList<>();
+        indexBuffer = new ArrayList<>();
+        vertexBuffer = new ArrayList<>();
 
         initMatrices();
         initListeners(panel);
+        createScene();
+    }
+
+    private void createScene() {
+        vertexBuffer.add(new Vertex(new Point3D(.5, .0, .9), new Col(255, 0, 0))); // 0 // nejvíce vlevo
+        vertexBuffer.add(new Vertex(new Point3D(.7, .7, .9), new Col(255, 120, 0))); // 1 // nejvíce dole
+        vertexBuffer.add(new Vertex(new Point3D(.0, .5, .3), new Col(255, 255, 0))); // 2 // společný
+        vertexBuffer.add(new Vertex(new Point3D(.3, .8, .5), new Col(0, 255, 0))); // 3 // nejvíce vpravo
+        vertexBuffer.add(new Vertex(new Point3D(.1, .2, 1), new Col(0, 255, 120))); // 4 // nejvíce nahoře
+        vertexBuffer.add(new Vertex(new Point3D(.7, .3, .2), new Col(0, 255, 255))); // 4 // nejvíce nahoře
+
+        indexBuffer.add(0);
+        indexBuffer.add(2);
+        indexBuffer.add(1);
+
+        indexBuffer.add(3);
+        indexBuffer.add(4);
+        indexBuffer.add(5);
+
+        elementBuffer.add(new Element(TopologyType.TRIANGLE, 0, 6));
+        renderer.draw(elementBuffer, indexBuffer, vertexBuffer);
+        panel.repaint(); // pouze pro debug
     }
 
     private void initMatrices() {
@@ -37,7 +72,7 @@ public class Controller3D {
 
         projection = new Mat4PerspRH(
                 Math.PI / 3,
-                raster.getHeight() / (float) raster.getWidth(),
+                imageRaster.getHeight() / (float) imageRaster.getWidth(),
                 0.5,
                 50
         );
@@ -70,8 +105,8 @@ public class Controller3D {
     }
 
     private void display() {
-        raster.clear();
-
+        renderer.clear();
+        // TODO draw
         panel.repaint();
     }
 
