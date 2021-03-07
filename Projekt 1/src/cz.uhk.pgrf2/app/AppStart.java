@@ -1,7 +1,7 @@
-package streda_16_35_c05.app;
+package app;
 
-import streda_16_35_c05.controller.Controller3D;
-import streda_16_35_c05.view.Window;
+import controller.Controller3D;
+import view.Window;
 
 import javax.swing.*;
 

@@ -45,20 +45,94 @@ public class RendererZBuffer implements GPURenderer {
                 }
 
             } else if (topologyType == TopologyType.LINE) {
-                // TODO
+                for (int i = start; i < start + end; i += 2) {
+                    final Integer i1 = indexBuffer.get(i);
+                    final Integer i2 = indexBuffer.get(i + 1);
+                    final Vertex v1 = vertexBuffer.get(i1);
+                    final Vertex v2 = vertexBuffer.get(i2);
+                    prepareLine(v1, v2);
+                }
             }
         }
     }
 
-    private void prepareTriangle(Vertex v1, Vertex v2, Vertex v3) {
-
+    private void prepareLine(Vertex v1, Vertex v2) {
         // Transformation of points
-        Vertex a = new Vertex(v1.getPoint().mul(model).mul(view).mul(projection), v1.getColor());
-        Vertex b = new Vertex(v2.getPoint().mul(model).mul(view).mul(projection), v2.getColor());
-        Vertex c = new Vertex(v3.getPoint().mul(model).mul(view).mul(projection), v3.getColor());
+        Vertex a = transform(v1);
+        Vertex b = transform(v2);
+
+        // Cuts line completely outside projection view
+        if (((a.getX() < -a.getW()) || (b.getX() < -b.getW()))     ||     // Too far to the left
+                ((a.getX() > a.getW()) || (b.getX() > b.getW()))   ||     // Too far to the right
+                ((a.getY() < -a.getW()) || (b.getY() < -b.getW())) ||     // Too far up
+                ((a.getY() > a.getW()) || (b.getY() > b.getW()))   ||     // Too far down
+                ((a.getZ() < 0) || (b.getZ() < 0))                 ||     // Behind us
+                ((a.getY() > a.getW()) || (b.getY() > b.getW()))) {       // Too far
+            return;
+        }
+
+        // Orders points according to Z (a.z > b.z)
+        if (a.getZ() < b.getZ()) {
+            Vertex aux = a;
+            a = b;
+            b = aux;
+        }
+
+        // a.Z is the biggest one => if it is smaller than 0, so is b.Z => there is nothing to display
+        if (a.getZ() < 0) {
+            return;
+        } else if (b.getZ() < 0) {                          // only b.Z is visible.
+            double t1 = (0 - a.getZ()) / (b.getZ() - a.getZ());
+            Vertex ab = a.mul(1 - t1).add(b.mul(t1));
+            
+            drawLine(a, ab);
+        } else {
+            drawLine(a, b);
+        }
+
+    }
+
+    private void drawLine(Vertex a, Vertex b) {
+        // Dehomog
+        Optional<Vertex> oA = a.dehomog();
+        Optional<Vertex> oB = b.dehomog();
+
+        if (oA.isEmpty() || oB.isEmpty()) return;
+        a = oA.get();
+        b = oB.get();
+
+        // Transform to window
+        a = transformToWindow(a);
+        b = transformToWindow(b);
+
+        // TODO Finish
+        long start = (long) Math.max(Math.ceil(a.getY()), 0);
+        double end = Math.min(b.getY(), imageRaster.getHeight() - 1);
+        for (long y = start; y <= end; y++) {
+            double t1 = (y - a.getY()) / (b.getY() - a.getY());
+
+            Vertex ab = a.mul(1 - t1).add(b.mul(t1));
+
+            fillLine(y, a, ab);
+        }
+
+    }
+
+    private void prepareTriangle(Vertex v1, Vertex v2, Vertex v3) {
+        // Transformation of points
+        Vertex a = transform(v1);
+        Vertex b = transform(v2);
+        Vertex c = transform(v3);
 
         // Cuts triangles completely outside projection view
-        // TODO slide 93
+        if (((a.getX() < -a.getW()) || (b.getX() < -b.getW()) || (c.getX() < -c.getW()))    ||     // Too far to the left
+                ((a.getX() > a.getW()) || (b.getX() > b.getW()) || (c.getX() > c.getW()))   ||     // Too far to the right
+                ((a.getY() < -a.getW()) || (b.getY() < -b.getW()) || (c.getY() < -c.getW()))||     // Too far up
+                ((a.getY() > a.getW()) || (b.getY() > b.getW()) || (c.getY() > c.getW()))   ||     // Too far down
+                ((a.getZ() < 0) || (b.getZ() < 0) || (c.getZ() < 0))                        ||     // Behind us
+                ((a.getY() > a.getW()) || (b.getY() > b.getW()) || (c.getY() > c.getW()))) {       // Too far
+            return;
+        }
 
         // Orders points according to Z (a.z > b.z > c.z)
         if (a.getZ() < b.getZ()) {
@@ -79,7 +153,7 @@ public class RendererZBuffer implements GPURenderer {
             b = aux;
         }
 
-        // a.Z is the biggest one => if it is smaller than is all are => there is nothing to display
+        // a.Z is the biggest one => if it is smaller than 0, all are => there is nothing to display
         if (a.getZ() < 0) {
             return;
         } else if (b.getZ() < 0) {                          // a.Z is visible, rest are not.
@@ -105,6 +179,11 @@ public class RendererZBuffer implements GPURenderer {
             drawTriangle(a, b, c);
         }
 
+    }
+
+    private Vertex transform(Vertex vertex) {
+        Vertex a = new Vertex(vertex.getPoint().mul(model).mul(view).mul(projection), vertex.getColor());
+        return a;
     }
 
     private void drawTriangle(Vertex a, Vertex b, Vertex c) {
@@ -154,7 +233,18 @@ public class RendererZBuffer implements GPURenderer {
             fillLine(y, ab, ac);
         }
 
-        // TODO B->C
+        // B -> C
+        start = (long) Math.max(Math.ceil(b.getY()), 0);
+        end = Math.min(c.getY(), imageRaster.getHeight() -1);
+        for (long y = start; y <= end; y++) {
+            double t1 = (y - b.getY()) / (c.getY() - b.getY());
+            double t2 = (y - a.getY()) / (c.getY() - a.getY());
+
+            Vertex bc = b.mul(1 - t1).add(c.mul(t1));
+            Vertex ac = a.mul(1 - t2).add(c.mul(t2));
+
+            fillLine(y, bc, ac);
+        }
     }
 
     private Vertex transformToWindow(Vertex vertex) {
@@ -194,22 +284,23 @@ public class RendererZBuffer implements GPURenderer {
 
     @Override
     public void clear() {
-        // TODO
+        imageRaster.clear();
+        depthBuffer.clear();
     }
 
     @Override
     public void setModel(Mat4 model) {
-        // TODO
+        this.model = model;
     }
 
     @Override
     public void setView(Mat4 view) {
-        // TODO
+        this.view = view;
     }
 
     @Override
     public void setProjection(Mat4 projection) {
-        // TODO
+        this.projection = projection;
     }
 
 }
