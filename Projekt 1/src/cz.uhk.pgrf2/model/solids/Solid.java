@@ -1,5 +1,6 @@
 package model.solids;
 
+import model.Element;
 import model.Vertex;
 import transforms.Mat4;
 import transforms.Mat4Identity;
@@ -12,10 +13,10 @@ public abstract class Solid {
 
     final List<Vertex> vertexBuffer = new ArrayList<>();
     final List<Integer> indexBuffer = new ArrayList<>();
-
+    final List<Element> elementBuffer = new ArrayList<>();
 
     private Mat4 model = new Mat4Identity();
-    private boolean transformable = true;
+    boolean transformable = true;
 
     final void addIndices(Integer... indices) {
         indexBuffer.addAll(Arrays.asList(indices));
@@ -37,6 +38,10 @@ public abstract class Solid {
         return indexBuffer;
     }
 
+    public List<Element> getElementBuffer() {
+        return elementBuffer;
+    }
+
     public Mat4 getModel() {
         return model;
     }
@@ -44,4 +49,6 @@ public abstract class Solid {
     public boolean isTransformable() {
         return transformable;
     }
+
+
 }

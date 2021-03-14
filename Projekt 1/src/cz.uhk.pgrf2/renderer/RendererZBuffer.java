@@ -31,7 +31,9 @@ public class RendererZBuffer implements GPURenderer {
         for (Element element : elements) {
             final TopologyType topologyType = element.getTopologyType();
             final int start = element.getStart();
-            final int end = element.getEnd();
+            final int end = element.getCount();
+
+//            model = new Mat4Scale(0.3).mul(new Mat4RotX(Math.PI/4)).mul(new Mat4Transl(new Vec3D(0,0.3,0)));
 
             if(topologyType == TopologyType.TRIANGLE) {
                 for (int i = start; i < start + end; i += 3) {
@@ -60,16 +62,6 @@ public class RendererZBuffer implements GPURenderer {
         // Transformation of points
         Vertex a = transform(v1);
         Vertex b = transform(v2);
-
-        // Cuts line completely outside projection view
-        if (((a.getX() < -a.getW()) || (b.getX() < -b.getW()))     ||     // Too far to the left
-                ((a.getX() > a.getW()) || (b.getX() > b.getW()))   ||     // Too far to the right
-                ((a.getY() < -a.getW()) || (b.getY() < -b.getW())) ||     // Too far up
-                ((a.getY() > a.getW()) || (b.getY() > b.getW()))   ||     // Too far down
-                ((a.getZ() < 0) || (b.getZ() < 0))                 ||     // Behind us
-                ((a.getY() > a.getW()) || (b.getY() > b.getW()))) {       // Too far
-            return;
-        }
 
         // Orders points according to Z (a.z > b.z)
         if (a.getZ() < b.getZ()) {
@@ -105,17 +97,42 @@ public class RendererZBuffer implements GPURenderer {
         a = transformToWindow(a);
         b = transformToWindow(b);
 
-        // TODO Finish
-        long start = (long) Math.max(Math.ceil(a.getY()), 0);
-        double end = Math.min(b.getY(), imageRaster.getHeight() - 1);
-        for (long y = start; y <= end; y++) {
-            double t1 = (y - a.getY()) / (b.getY() - a.getY());
+        double dx = a.getX() - b.getY();
+        double dy = a.getY() - b.getY();
 
-            Vertex ab = a.mul(1 - t1).add(b.mul(t1));
+        if (Math.abs(dx) > Math.abs(dy)) { // x is main axis, interpolate according to x.
 
-            fillLine(y, a, ab);
+            if (a.getX() > b.getX()) {
+                Vertex aux = a;
+                a = b;
+                b = aux;
+            }
+
+            long start = (long) Math.max(Math.ceil(a.getX()), 0);
+            double end = Math.min(b.getX(), imageRaster.getWidth());
+            for (long x = start; x < end; x++) {
+                double t = (x - a.getX()) / (b.getX() - a.getX());
+
+                Vertex ab = a.mul(1 - t).add(b.mul(t));
+                drawPixel((int) ab.getX(), (int) ab.getY(), ab.getZ(), ab.getColor());
+            }
+        } else { // y is main axis, interpolate according to y.
+
+            if (a.getY() > b.getY()) {
+                Vertex aux = a;
+                a = b;
+                b = aux;
+            }
+
+            long start = (long) Math.max(Math.ceil(a.getY()), 0);
+            double end = Math.min(b.getY(), imageRaster.getHeight());
+            for (long y = start; y < end; y++) {
+                double t = (y - a.getY()) / (b.getY() - a.getY());
+
+                Vertex ab = a.mul(1 - t).add(b.mul(t));
+                drawPixel((int) ab.getX(), (int) ab.getY(), ab.getZ(), ab.getColor());
+            }
         }
-
     }
 
     private void prepareTriangle(Vertex v1, Vertex v2, Vertex v3) {
@@ -125,12 +142,12 @@ public class RendererZBuffer implements GPURenderer {
         Vertex c = transform(v3);
 
         // Cuts triangles completely outside projection view
-        if (((a.getX() < -a.getW()) || (b.getX() < -b.getW()) || (c.getX() < -c.getW()))    ||     // Too far to the left
-                ((a.getX() > a.getW()) || (b.getX() > b.getW()) || (c.getX() > c.getW()))   ||     // Too far to the right
-                ((a.getY() < -a.getW()) || (b.getY() < -b.getW()) || (c.getY() < -c.getW()))||     // Too far up
-                ((a.getY() > a.getW()) || (b.getY() > b.getW()) || (c.getY() > c.getW()))   ||     // Too far down
-                ((a.getZ() < 0) || (b.getZ() < 0) || (c.getZ() < 0))                        ||     // Behind us
-                ((a.getY() > a.getW()) || (b.getY() > b.getW()) || (c.getY() > c.getW()))) {       // Too far
+        if (((a.getX() < -a.getW()) && (b.getX() < -b.getW()) && (c.getX() < -c.getW()))    ||     // Too far to the left
+                ((a.getX() > a.getW()) && (b.getX() > b.getW()) && (c.getX() > c.getW()))   ||     // Too far to the right
+                ((a.getY() < -a.getW()) && (b.getY() < -b.getW()) && (c.getY() < -c.getW()))||     // Too far up
+                ((a.getY() > a.getW()) && (b.getY() > b.getW()) && (c.getY() > c.getW()))   ||     // Too far down
+                ((a.getZ() < 0) && (b.getZ() < 0) && (c.getZ() < 0))                        ||     // Behind us
+                ((a.getY() > a.getW()) && (b.getY() > b.getW()) && (c.getY() > c.getW()))) {       // Too far
             return;
         }
 

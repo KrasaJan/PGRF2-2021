@@ -1,25 +1,27 @@
 package model;
 
+import model.solids.Solid;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Scene {
 
-    private final List<Element> elements;
+    private final List<Solid> solids;
 
     public Scene() {
-        elements = new ArrayList<>();
+        solids = new ArrayList<>();
     }
 
-    public List<Element> getElements() {
-        return elements;
+    public List<Solid> getSolids() {
+        return solids;
     }
 
-    public void addElement(Element element) {
-        elements.add(element);
+    public void addSolid(Solid solid) {
+        solids.add(solid);
     }
 
-    public void removeElement(Element element) {
-        elements.remove(element);
+    public void removeSolid(Solid solid) {
+        solids.remove(solid);
     }
 }
