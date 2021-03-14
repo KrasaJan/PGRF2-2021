@@ -1,10 +1,9 @@
 package controller;
 
-import model.Element;
 import model.Scene;
 import model.TopologyType;
-import model.Vertex;
 import model.solids.Axis;
+import model.solids.Bicubic;
 import model.solids.Cube;
 import model.solids.Solid;
 import model.solids.Tetrahedron;
@@ -15,8 +14,6 @@ import transforms.*;
 import view.Panel;
 
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Controller3D {
 
@@ -28,11 +25,10 @@ public class Controller3D {
     private Mat4 model, view, projection, orthoPro, perspPro;
 
     private final double step = 0.5, scaleUp = 1.1, scaleDown = 0.9;
-    private double totalZ = 0, totalA = 0;
     private Camera camera;
 
 
-    private boolean leftMB, middleMB, rightMB;
+    private boolean leftMB, rightMB;
     private int ogX, ogY, endX, endY;
 
 
@@ -42,7 +38,7 @@ public class Controller3D {
         this.renderer = new RendererZBuffer(imageRaster);
         this.scene = new Scene();
 
-        initMatrices();
+        initiate();
 
         view = camera.getViewMatrix();
         projection = perspPro;
@@ -52,22 +48,23 @@ public class Controller3D {
         scene.addSolid(new Axis());
         scene.addSolid(new Cube(TopologyType.TRIANGLE));
         scene.addSolid(new Tetrahedron(TopologyType.TRIANGLE));
+        scene.addSolid(new Bicubic());
 
+        new UI(panel, this, scene);
         initListeners(panel);
         createScene();
     }
 
     private void createScene() {
 
-
         for (Solid solid : scene.getSolids()) {
+            renderer.setModel(solid.getModel());
             renderer.draw(solid.getElementBuffer(), solid.getIndexBuffer(), solid.getVertexBuffer());
         }
 
-
     }
 
-    private void initMatrices() {
+    public void initiate() {
         model = new Mat4Identity();
 
         camera = new Camera()
@@ -91,7 +88,7 @@ public class Controller3D {
         );
     }
 
-    private void initListeners(Panel panel) {
+    public void initListeners(Panel panel) {
 
         panel.addMouseListener(new MouseAdapter() {
 
@@ -99,7 +96,6 @@ public class Controller3D {
             /* Gets the coordinates of a click and remembers the button. */
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == 1) { leftMB = true; }
-                if (e.getButton() == 2) { middleMB = true; }
                 if (e.getButton() == 3) { rightMB = true; }
                 ogX = e.getX();
                 ogY = e.getY();
@@ -109,7 +105,6 @@ public class Controller3D {
             /* Resets pressed button. */
             public void mouseReleased(MouseEvent e) {
                 leftMB = false;
-                middleMB = false;
                 rightMB = false;
             }
 
@@ -118,13 +113,14 @@ public class Controller3D {
         panel.addMouseMotionListener(new MouseAdapter() {
 
             @Override
-            /* Computes the difference of x,y coordinates, if LMB moves camera, if MMB moves solids, if RMB rotes them. */
+            /* Computes the difference of x,y coordinates, if LMB rotates camera, if RMB rotes them. */
             public void mouseDragged(MouseEvent e) {
                 endX = e.getX();
                 endY = e.getY();
                 int moveX = ogX - endX;
                 int moveY = ogY - endY;
 
+                /* Rotates camera */
                 if (leftMB) {
                     double azimuth = Math.PI * moveX / imageRaster.getWidth();
                     double zenith = Math.PI * moveY / imageRaster.getHeight();
@@ -143,27 +139,23 @@ public class Controller3D {
                     ogX = e.getX();
                     ogY = e.getY();
 
-                    totalA += azimuth;
-                    totalZ += zenith;
                 }
-//                if (middleMB) {
-//                    Mat4 transl = new Mat4Transl((double)moveX/100,(double)moveY/100,0);
-//                    computeModel(transl);
-//                }
-//                if (rightMB) {
-//                    Mat4 rot;
-//                    rot = new Mat4RotXYZ(0, + moveY * Math.PI / 720, moveX * Math.PI / 720);
-//                    if (e.isControlDown()) {
-//                        rot = new Mat4RotX(moveX * Math.PI/720);
-//                    }
-//                    if (e.isShiftDown()) {
-//                        rot = new Mat4RotY(moveY * Math.PI/720);
-//                    }
-//                    if (e.isAltDown()) {
-//                        rot = new Mat4RotZ(moveX * Math.PI/720);
-//                    }
-//                    computeModel(rot);
-//                }
+                /* Rotates selected solids */
+                if (rightMB) {
+                    Mat4 rot = new Mat4Identity();
+                    if (e.isControlDown()) {
+                        rot = new Mat4RotX(moveX * Math.PI/7200);
+                    }
+                    if (e.isShiftDown()) {
+                        rot = new Mat4RotY(moveX * Math.PI/7200);
+                    }
+                    if (e.isAltDown()) {
+                        rot = new Mat4RotZ(moveX * Math.PI/7200);
+                    }
+                    computeModel(rot);
+
+                    display();
+                }
 
             }
 
@@ -173,21 +165,14 @@ public class Controller3D {
             @Override
             /* Moves camera up/down, scales solids. */
             public void mouseWheelMoved(MouseWheelEvent e) {
+                Mat4 scale;
 //                if (JCamera.isSelected()) {
-//                    if (e.isControlDown()){
-//                        if (e.getWheelRotation() < 0) {
-//                            scale = new Mat4Scale(scaleUp);
-//                        } else {
-//                            scale = new Mat4Scale(scaleDown);
-//                        }
-//                        computeModel(scale);
-//                    } else {
-//                        if (e.getWheelRotation() < 0) {
-//                            camera = camera.up(step);
-//                        } else {
-//                            camera = camera.down(step);
-//                        }
-//                    }
+                if (e.getWheelRotation() < 0) {
+                    scale = new Mat4Scale(scaleUp);
+                } else {
+                    scale = new Mat4Scale(scaleDown);
+                }
+                computeModel(scale);
 //                } else {
 //                    if (e.getWheelRotation() < 0) {
 //                        scale = new Mat4Scale(scaleUp);
@@ -196,28 +181,47 @@ public class Controller3D {
 //                    }
 //                    computeModel(scale);
 //                }
-//                display();
+                display();
             }
         });
 
         panel.addKeyListener(new KeyAdapter() {
             @Override
-            /* Sets WSAD movement + R for reset button */
+            /* Sets WSADQE movement of camera + IJKLUO movement of solids + R for reset button */
             public void keyReleased(KeyEvent e) {
-//                if (e.getKeyCode() == KeyEvent.VK_R) { reInitiate(); }
+                if (e.getKeyCode() == KeyEvent.VK_R) { initiate(); display(); }
+
                 if (e.getKeyCode() == KeyEvent.VK_W) { camera = camera.forward(step); }
                 if (e.getKeyCode() == KeyEvent.VK_S) { camera = camera.backward(step); }
                 if (e.getKeyCode() == KeyEvent.VK_A) { camera = camera.left(step); }
                 if (e.getKeyCode() == KeyEvent.VK_D) { camera = camera.right(step); }
                 if (e.getKeyCode() == KeyEvent.VK_Q) { camera = camera.up(step); }
                 if (e.getKeyCode() == KeyEvent.VK_E) { camera = camera.down(step); }
+
+                if (e.getKeyCode() == KeyEvent.VK_I) { Mat4 transl = new Mat4Transl(step,0,0); computeModel(transl); }
+                if (e.getKeyCode() == KeyEvent.VK_K) { Mat4 transl = new Mat4Transl(-step,0,0);computeModel(transl); }
+                if (e.getKeyCode() == KeyEvent.VK_J) { Mat4 transl = new Mat4Transl(0,-step,0);computeModel(transl); }
+                if (e.getKeyCode() == KeyEvent.VK_L) { Mat4 transl = new Mat4Transl(0,step,0); computeModel(transl); }
+                if (e.getKeyCode() == KeyEvent.VK_U) { Mat4 transl = new Mat4Transl(0,0,-step);computeModel(transl); }
+                if (e.getKeyCode() == KeyEvent.VK_O) { Mat4 transl = new Mat4Transl(0,0,step); computeModel(transl); }
+
                 display();
             }
         });
 
     }
 
-    private void display() {
+    /* Changes the model matrix of active solids. */
+    public void computeModel(Mat4 mat) {
+        for (Solid solid : scene.getSolids()) {
+            if (solid.isTransformable()) {
+                model = solid.getModel().mul(mat);
+                solid.setModel(model);
+            }
+        }
+    }
+
+    public void display() {
         renderer.clear();
         renderer.setView(camera.getViewMatrix());
         // TODO draw

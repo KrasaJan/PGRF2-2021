@@ -33,8 +33,6 @@ public class RendererZBuffer implements GPURenderer {
             final int start = element.getStart();
             final int end = element.getCount();
 
-//            model = new Mat4Scale(0.3).mul(new Mat4RotX(Math.PI/4)).mul(new Mat4Transl(new Vec3D(0,0.3,0)));
-
             if(topologyType == TopologyType.TRIANGLE) {
                 for (int i = start; i < start + end; i += 3) {
                     final Integer i1 = indexBuffer.get(i);
