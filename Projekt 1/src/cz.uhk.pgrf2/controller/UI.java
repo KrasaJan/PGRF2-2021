@@ -33,18 +33,8 @@ public class UI {
         createButtons(tb);
     }
 
+    /* Fills in toolbar, adds listeners */
     private void createButtons(JToolBar tb) {
-
-        JRadioButton JView = new JRadioButton("View");
-        JView.setFocusable(false);
-
-        JRadioButton JCamera = new JRadioButton("Camera");
-        JCamera.setFocusable(false);
-        JCamera.setSelected(true);
-
-        ButtonGroup viewModes = new ButtonGroup();
-        viewModes.add(JView);
-        viewModes.add(JCamera);
 
         JRadioButton JPersp = new JRadioButton("Perspective Projection");
         JPersp.setFocusable(false);
@@ -83,9 +73,8 @@ public class UI {
 
         String[] cbOptions = {"Filled", "Wireframe"};
         JTopology = new JComboBox<>(cbOptions);
+        JTopology.setFocusable(false);
 
-        tb.add(JView);
-        tb.add(JCamera);
         tb.add(JPersp);
         tb.add(JOrtho);
         tb.add(JCubeV);
@@ -96,8 +85,6 @@ public class UI {
         tb.add(JBicubicT);
         tb.add(JTopology);
 
-        JView.addActionListener(e -> view());
-        JCamera.addActionListener(e -> camera());
         JPersp.addActionListener(e -> persp());
         JOrtho.addActionListener(e -> ortho());
         JCubeV.addActionListener(e -> cubeV());
@@ -110,24 +97,19 @@ public class UI {
 
     }
 
-    private void view() {
-        controller3D.initiate();
-        controller3D.display();
-    }
-
-    private void camera() {
-        controller3D.initiate();
-        controller3D.display();
-    }
-
+    /* Resets view with perspective projection */
     private void persp() {
+        controller3D.setProjection(controller3D.getPerspPro());
         controller3D.display();
     }
 
+    /* Resets view with orthogonal projection */
     private void ortho() {
+        controller3D.setProjection(controller3D.getOrthoPro());
         controller3D.display();
     }
 
+    /* Adds or removes cube from the scene */
     private void cubeV() {
         if (JCubeV.isSelected()) {
             scene.addSolid(cube);
@@ -137,6 +119,7 @@ public class UI {
         controller3D.display();
     }
 
+    /* Adds or removes tetrahedron from the scene */
     private void tetraV() {
         if (JTetraV.isSelected()) {
             scene.addSolid(tetra);
@@ -146,6 +129,7 @@ public class UI {
         controller3D.display();
     }
 
+    /* Adds or removes bicubic from the scene */
     private void bicubicV() {
         if (JBicubicV.isSelected()) {
             scene.addSolid(bicubic);
@@ -167,8 +151,7 @@ public class UI {
         bicubic.setTransformable(JBicubicT.isSelected());
     }
 
-    //TODO
-    // keyboard listener stops working. Solve.
+    /* Recreates some solids with different topology, resets Visibility and Transformbility options */
     private void checkCB() {
         Mat4 model;
         if (JTopology.getSelectedIndex() == 0) {

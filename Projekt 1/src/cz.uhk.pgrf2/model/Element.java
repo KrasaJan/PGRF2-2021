@@ -4,7 +4,7 @@ public class Element {
 
     private final TopologyType topologyType;
     private final int start;                        // Start of IndexBuffer
-    private final int count;                          // End  of IndexBuffer
+    private final int count;                        // Amount of indices to use from IndexBuffer
 
     /**
      * @param topologyType topology type of the element
@@ -16,6 +16,9 @@ public class Element {
         this.start = start;
         this.count = count;
     }
+
+    //TODO ?
+    // setTopologyType instead of recreating whole solid? Would require routines to change IB as well.
 
     public TopologyType getTopologyType() {
         return topologyType;

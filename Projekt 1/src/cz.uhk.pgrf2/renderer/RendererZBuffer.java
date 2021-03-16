@@ -26,15 +26,16 @@ public class RendererZBuffer implements GPURenderer {
         projection = new Mat4Identity();
     }
 
+    /* Depending on topology draws given elements, prepares VB and IB */
     @Override
     public void draw(List<Element> elements, List<Integer> indexBuffer, List<Vertex> vertexBuffer) {
         for (Element element : elements) {
             final TopologyType topologyType = element.getTopologyType();
             final int start = element.getStart();
-            final int end = element.getCount();
+            final int count = element.getCount();
 
             if(topologyType == TopologyType.TRIANGLE) {
-                for (int i = start; i < start + end; i += 3) {
+                for (int i = start; i < start + count; i += 3) {
                     final Integer i1 = indexBuffer.get(i);
                     final Integer i2 = indexBuffer.get(i + 1);
                     final Integer i3 = indexBuffer.get(i + 2);
@@ -43,9 +44,9 @@ public class RendererZBuffer implements GPURenderer {
                     final Vertex v3 = vertexBuffer.get(i3);
                     prepareTriangle(v1, v2, v3);
                 }
-
-            } else if (topologyType == TopologyType.LINE) {
-                for (int i = start; i < start + end; i += 2) {
+            }
+            if (topologyType == TopologyType.LINE) {
+                for (int i = start; i < start + count; i += 2) {
                     final Integer i1 = indexBuffer.get(i);
                     final Integer i2 = indexBuffer.get(i + 1);
                     final Vertex v1 = vertexBuffer.get(i1);
@@ -53,9 +54,16 @@ public class RendererZBuffer implements GPURenderer {
                     prepareLine(v1, v2);
                 }
             }
+            if (topologyType == TopologyType.POINT) {
+                for (int i = start; i < start + count; i++) {
+                    final Vertex v1 = vertexBuffer.get(indexBuffer.get(i));
+                    drawPixel((int) Math.round(v1.getX()), (int) Math.round(v1.getY()), v1.getZ(), v1.getColor());
+                }
+            }
         }
     }
 
+    /* Transforms coordinates; Cuts partly visible lines using interpolation */
     private void prepareLine(Vertex v1, Vertex v2) {
         // Transformation of points
         Vertex a = transform(v1);
@@ -82,6 +90,7 @@ public class RendererZBuffer implements GPURenderer {
 
     }
 
+    /* Dehomoginizes coordinates; transforms them into 2D window; prepares the pixels for rasterisation */
     private void drawLine(Vertex a, Vertex b) {
         // Dehomog
         Optional<Vertex> oA = a.dehomog();
@@ -95,10 +104,11 @@ public class RendererZBuffer implements GPURenderer {
         a = transformToWindow(a);
         b = transformToWindow(b);
 
-        double dx = a.getX() - b.getY();
+        double dx = a.getX() - b.getX();
         double dy = a.getY() - b.getY();
 
-        if (Math.abs(dx) > Math.abs(dy)) { // x is main axis, interpolate according to x.
+        // Interpolates the lines
+        if (Math.abs(dx) > Math.abs(dy)) {      // x is main axis, interpolates according to x.
 
             if (a.getX() > b.getX()) {
                 Vertex aux = a;
@@ -114,7 +124,7 @@ public class RendererZBuffer implements GPURenderer {
                 Vertex ab = a.mul(1 - t).add(b.mul(t));
                 drawPixel((int) ab.getX(), (int) ab.getY(), ab.getZ(), ab.getColor());
             }
-        } else { // y is main axis, interpolate according to y.
+        } else {                                // y is main axis, interpolate according to y.
 
             if (a.getY() > b.getY()) {
                 Vertex aux = a;
@@ -133,13 +143,14 @@ public class RendererZBuffer implements GPURenderer {
         }
     }
 
+    /* Transforms coordinates; Cuts off triangles outside of view; Cuts partly visible triangles using interpolation */
     private void prepareTriangle(Vertex v1, Vertex v2, Vertex v3) {
         // Transformation of points
         Vertex a = transform(v1);
         Vertex b = transform(v2);
         Vertex c = transform(v3);
 
-        // Cuts triangles completely outside projection view
+        // Cuts triangles completely outside of projection view
         if (((a.getX() < -a.getW()) && (b.getX() < -b.getW()) && (c.getX() < -c.getW()))    ||     // Too far to the left
                 ((a.getX() > a.getW()) && (b.getX() > b.getW()) && (c.getX() > c.getW()))   ||     // Too far to the right
                 ((a.getY() < -a.getW()) && (b.getY() < -b.getW()) && (c.getY() < -c.getW()))||     // Too far up
@@ -196,11 +207,7 @@ public class RendererZBuffer implements GPURenderer {
 
     }
 
-    private Vertex transform(Vertex vertex) {
-        Vertex a = new Vertex(vertex.getPoint().mul(model).mul(view).mul(projection), vertex.getColor());
-        return a;
-    }
-
+    /* Dehomoginizes coordinates; transforms them into 2D window; prepares the pixels for rasterisation */
     private void drawTriangle(Vertex a, Vertex b, Vertex c) {
         // Dehomog
         Optional<Vertex> oA = a.dehomog();
@@ -262,16 +269,25 @@ public class RendererZBuffer implements GPURenderer {
         }
     }
 
+    /* Transforms coordinates using model, view and projection matrices */
+    private Vertex transform(Vertex vertex) {
+        return new Vertex(vertex.getPoint().mul(model).mul(view).mul(projection), vertex.getColor());
+    }
+
+    /* Transforms coordinates to window - moves center, shifty y axis */
     private Vertex transformToWindow(Vertex vertex) {
         Vec3D vec3D = new Vec3D(vertex.getPoint())
-                .mul(new Vec3D(1, -1, 1)) // Y goes upwards, we need it downwards
-                .add(new Vec3D(1, 1, 0))  // (0,0) is at the middle, we need it in left-top corner
+                // Y goes upwards, we need it downwards
+                .mul(new Vec3D(1, -1, 1))
+                // (0,0) is at the middle, we need it in left-top corner
+                .add(new Vec3D(1, 1, 0))
                 // We got <0;2> => multiply by half the size of the window
                 .mul(new Vec3D(imageRaster.getWidth() / 2f, imageRaster.getHeight() / 2f, 1));
 
         return new Vertex(new Point3D(vec3D), vertex.getColor());
     }
 
+    /* Draws lines */
     private void fillLine(long y, Vertex a, Vertex b) {
         if (a.getX() > b.getX()) {
             Vertex aux = a;

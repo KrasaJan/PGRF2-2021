@@ -27,7 +27,6 @@ public class Tetrahedron extends Solid {
             elementBuffer.add(new Element(topologyType, 0, 12));
         }
 
-
     }
 
 }

@@ -26,8 +26,16 @@ public abstract class Solid {
         this.model = model;
     }
 
+    public Mat4 getModel() {
+        return model;
+    }
+
     public void setTransformable(boolean transformable) {
         this.transformable = transformable;
+    }
+
+    public boolean isTransformable() {
+        return transformable;
     }
 
     public List<Vertex> getVertexBuffer() {
@@ -40,14 +48,6 @@ public abstract class Solid {
 
     public List<Element> getElementBuffer() {
         return elementBuffer;
-    }
-
-    public Mat4 getModel() {
-        return model;
-    }
-
-    public boolean isTransformable() {
-        return transformable;
     }
 
 }

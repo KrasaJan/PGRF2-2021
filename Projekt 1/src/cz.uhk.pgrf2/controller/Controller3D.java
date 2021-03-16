@@ -2,11 +2,7 @@ package controller;
 
 import model.Scene;
 import model.TopologyType;
-import model.solids.Axis;
-import model.solids.Bicubic;
-import model.solids.Cube;
-import model.solids.Solid;
-import model.solids.Tetrahedron;
+import model.solids.*;
 import rasterize.Raster;
 import renderer.GPURenderer;
 import renderer.RendererZBuffer;
@@ -27,10 +23,8 @@ public class Controller3D {
     private final double step = 0.5, scaleUp = 1.1, scaleDown = 0.9;
     private Camera camera;
 
-
     private boolean leftMB, rightMB;
     private int ogX, ogY, endX, endY;
-
 
     public Controller3D(Panel panel) {
         this.panel = panel;
@@ -39,39 +33,19 @@ public class Controller3D {
         this.scene = new Scene();
 
         initiate();
-
-        view = camera.getViewMatrix();
-        projection = perspPro;
-        renderer.setView(view);
-        renderer.setProjection(perspPro);
-
-        scene.addSolid(new Axis());
-        scene.addSolid(new Cube(TopologyType.TRIANGLE));
-        scene.addSolid(new Tetrahedron(TopologyType.TRIANGLE));
-        scene.addSolid(new Bicubic());
+        createScene();
+        initListeners(panel);
+        display();
 
         new UI(panel, this, scene);
-        initListeners(panel);
-        createScene();
-    }
-
-    private void createScene() {
-
-        for (Solid solid : scene.getSolids()) {
-            renderer.setModel(solid.getModel());
-            renderer.draw(solid.getElementBuffer(), solid.getIndexBuffer(), solid.getVertexBuffer());
-        }
-
     }
 
     public void initiate() {
-        model = new Mat4Identity();
 
-        camera = new Camera()
-                .withPosition(new Vec3D(4, 4, 4))
-                .withAzimuth(Math.toRadians(225))
-                .withZenith(Math.toRadians(-30))
-                .withFirstPerson(true);
+        Vec3D e = new Vec3D(8, -5, 2);
+        Vec3D v = new Vec3D(-8, 5, -2);
+        Vec3D u = new Vec3D(0, 0, 1);
+        view = new Mat4ViewRH(e, v, u);
 
         orthoPro = new Mat4OrthoRH(
                 20,
@@ -86,6 +60,38 @@ public class Controller3D {
                 1,
                 20
         );
+
+        reInitiate();
+    }
+
+    public void reInitiate() {
+        model = new Mat4Identity();
+        for (Solid solid : scene.getSolids()) {
+            solid.setModel(model);
+        }
+
+        camera = new Camera()
+                .withPosition(new Vec3D(4, 4, 4))
+                .withAzimuth(Math.toRadians(225))
+                .withZenith(Math.toRadians(-30))
+                .withFirstPerson(true);
+
+        //TODO
+        // doesn't set camera?! Why?
+        // to test comment setView in display()
+        view = camera.getViewMatrix();
+        renderer.setView(view);
+        projection = perspPro;
+        renderer.setProjection(perspPro);
+
+        System.out.println("Re");
+    }
+
+    public void createScene() {
+        scene.addSolid(new Axis());
+        scene.addSolid(new Cube(TopologyType.TRIANGLE));
+        scene.addSolid(new Tetrahedron(TopologyType.TRIANGLE));
+        scene.addSolid(new BicubicSolid(TopologyType.TRIANGLE));
     }
 
     public void initListeners(Panel panel) {
@@ -189,7 +195,7 @@ public class Controller3D {
             @Override
             /* Sets WSADQE movement of camera + IJKLUO movement of solids + R for reset button */
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_R) { initiate(); display(); }
+                if (e.getKeyCode() == KeyEvent.VK_R) { reInitiate(); display(); }
 
                 if (e.getKeyCode() == KeyEvent.VK_W) { camera = camera.forward(step); }
                 if (e.getKeyCode() == KeyEvent.VK_S) { camera = camera.backward(step); }
@@ -224,10 +230,28 @@ public class Controller3D {
     public void display() {
         renderer.clear();
         renderer.setView(camera.getViewMatrix());
-        // TODO draw
-        createScene();
+        renderer.setProjection(projection);
+        draw();
         panel.repaint();
     }
 
+    public void draw() {
+        for (Solid solid : scene.getSolids()) {
+            renderer.setModel(solid.getModel());
+            renderer.draw(solid.getElementBuffer(), solid.getIndexBuffer(), solid.getVertexBuffer());
+        }
+    }
+
+    public Mat4 getOrthoPro() {
+        return orthoPro;
+    }
+
+    public Mat4 getPerspPro() {
+        return perspPro;
+    }
+
+    public void setProjection(Mat4 projection) {
+        this.projection = projection;
+    }
 
 }
