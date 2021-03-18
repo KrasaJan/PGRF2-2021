@@ -9,23 +9,32 @@ public class Vertex {
     private final Point3D point;
     private final Col color;
 
+    private final Vec2D texCoord;
+
     public Vertex(Point3D point, Col color) {
         this.point = point;
         this.color = color;
+        this.texCoord = new Vec2D(0,0);
+    }
+
+    public Vertex(Point3D point, Col color, Vec2D texCoord) {
+        this.point = point;
+        this.color = color;
+        this.texCoord = texCoord;
     }
 
     public Vertex mul(double t) {
-        return new Vertex(point.mul(t), color.mul(t));
+        return new Vertex(point.mul(t), color.mul(t), texCoord.mul(t));
     }
 
     public Vertex add(Vertex v) {
-        return new Vertex(point.add(v.getPoint()), color.add(v.getColor()));
+        return new Vertex(point.add(v.getPoint()), color.add(v.getColor()), texCoord.add(v.getTexCoord()));
     }
 
     public Optional<Vertex> dehomog() {
         Optional<Vec3D> dehomog = point.dehomog();
         if (dehomog.isPresent()) {
-            return Optional.of(new Vertex(new Point3D(dehomog.get()),color));
+            return Optional.of(new Vertex(new Point3D(dehomog.get()), color, texCoord));
         } else {
             return Optional.empty();
         }
@@ -37,6 +46,10 @@ public class Vertex {
 
     public Col getColor() {
         return color;
+    }
+
+    public Vec2D getTexCoord() {
+        return texCoord;
     }
 
     public double getX() {

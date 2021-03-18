@@ -6,6 +6,7 @@ import model.Vertex;
 import rasterize.DepthBuffer;
 import rasterize.Raster;
 import transforms.*;
+import util.Shader;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ public class RendererZBuffer implements GPURenderer {
     private final Raster<Double> depthBuffer;
 
     private Mat4 model, view, projection;
+    private Shader<Vertex, Col> shader;
 
     public RendererZBuffer(Raster<Integer> imageRaster) {
         this.imageRaster = imageRaster;
@@ -301,7 +303,8 @@ public class RendererZBuffer implements GPURenderer {
             double t = (x - a.getX()) / (b.getX() - a.getX());
             Vertex finalVertex = a.mul(1 - t).add(b.mul(t));
 
-            drawPixel((int)x, (int)y, finalVertex.getZ(), finalVertex.getColor());
+            final Col finalColor = shader.shade(finalVertex);
+            drawPixel((int)x, (int)y, finalVertex.getZ(), finalColor);
         }
     }
 
@@ -317,6 +320,11 @@ public class RendererZBuffer implements GPURenderer {
     public void clear() {
         imageRaster.clear();
         depthBuffer.clear();
+    }
+
+    @Override
+    public void setShader(Shader<Vertex, Col> shader) {
+        this.shader = shader;
     }
 
     @Override

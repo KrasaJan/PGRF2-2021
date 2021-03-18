@@ -1,0 +1,30 @@
+Zadání: Vytvořte program pro zobrazení jednoduché grafické scény složené alespoň ze tří těles.
+Navrhněte reprezentaci scény pomocí vhodných datových struktur a navržených objektových tříd
+
+DONE Implementujte uložení těles pomocí vertex a index bufferu, předpokládejte tělesa složená z hran i ploch (trojúhelníků)
+
+DONE Implementujte modelovací transformaci jednotlivých těles ve scéně, řízenou klávesnicí či programově jako animaci (pohyb, otáčení atd.)
+
+DONE Implementujte pohledovou transformaci řízenou pohybem pozorovatele pomocí klávesnice (WSAD) a rozhlížení pomocí myši (kamera)
+
+DONE Implementujte transformaci zobrazovacího objemu tj. projekci prostorové scény, možnost přepínání perspektivní a ortogonální projekce
+
+DONE Implementujte ořezání scény zobrazovacím objemem
+
+DONE Implementujte rasterizaci a algoritmus viditelnosti Z-buffer
+
+DONE Umožněte přepínání zobrazení drátového modelu a vyplněných ploch
+
+DONE Znázorněte soustavu souřadnic scény zobrazením barevně odlišených souřadnicových os
+
+NOT DONE Obarvěte jednotlivé plochy těles různou barvou
+
+BONUS: Namapovaní textury na povrch těles či jejich osvětlení bude oceněno bonusem
+
+DONE Vymodelujte alespoň dvě jednoduchá tělesa a alespoň jedno z těles bude definováno bikubickou plochou
+
+NOT DONE Natočte scénu a umístěte tělesa tak, aby byla zřejmá správná funkce algoritmu viditelnosti, vhodné je například protnutí dvou těles
+
+Před odevzdáním si znovu přečtěte pravidla odevzdávání a hodnocení projektů uvedené v Průvodci studiem
+Termín odevzdání: 19. března
+KF: konec následujícího týdne po druhém setkání

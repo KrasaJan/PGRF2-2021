@@ -5,21 +5,21 @@ import model.TopologyType;
 import model.Vertex;
 import transforms.Col;
 import transforms.Point3D;
+import transforms.Vec2D;
 
 public class Cube extends Solid {
 
     public Cube(TopologyType topologyType) {
 
-        vertexBuffer.add(new Vertex(new Point3D(1, -1, 1), new Col(255,164,0)));
-        vertexBuffer.add(new Vertex(new Point3D(1, 1, 1), new Col(255,164,0)));
-        vertexBuffer.add(new Vertex(new Point3D(-1, 1, 1), new Col(255,164,0)));
-        vertexBuffer.add(new Vertex(new Point3D(-1, -1, 1), new Col(255,164,0)));
+        vertexBuffer.add(new Vertex(new Point3D(1, -1, 1), new Col(255,167,0)));
+        vertexBuffer.add(new Vertex(new Point3D(1, 1, 1), new Col(255,167,0), new Vec2D(0,0)));
+        vertexBuffer.add(new Vertex(new Point3D(-1, 1, 1), new Col(255,167,0), new Vec2D(0,1)));
+        vertexBuffer.add(new Vertex(new Point3D(-1, -1, 1), new Col(255,167,0)));
 
         vertexBuffer.add(new Vertex(new Point3D(1, -1, -1), new Col(255,255,0)));
-        vertexBuffer.add(new Vertex(new Point3D(1, 1, -1), new Col(255,255,0)));
-        vertexBuffer.add(new Vertex(new Point3D(-1, 1, -1), new Col(255,255,0)));
+        vertexBuffer.add(new Vertex(new Point3D(1, 1, -1), new Col(255,255,0), new Vec2D(0,1)));
+        vertexBuffer.add(new Vertex(new Point3D(-1, 1, -1), new Col(255,255,0), new Vec2D(1,1)));
         vertexBuffer.add(new Vertex(new Point3D(-1, -1, -1), new Col(255,255,0)));
-
 
         if (topologyType == TopologyType.LINE) {
             addIndices(0, 1, 1, 2, 2, 3, 3, 0);

@@ -2,11 +2,14 @@ package controller;
 
 import model.Scene;
 import model.TopologyType;
+import model.Vertex;
 import model.solids.*;
 import rasterize.Raster;
 import renderer.GPURenderer;
 import renderer.RendererZBuffer;
 import transforms.*;
+import util.BasicColorShader;
+import util.Shader;
 import view.Panel;
 
 import java.awt.event.*;
@@ -18,8 +21,8 @@ public class Controller3D {
     private final GPURenderer renderer;
     private final Scene scene;
 
-    private Mat4 model, view, projection, orthoPro, perspPro;
-
+    private Mat4 model, projection, orthoPro, perspPro;
+    private Shader<Vertex, Col> shader;
     private final double step = 0.5, scaleUp = 1.1, scaleDown = 0.9;
     private Camera camera;
 
@@ -42,11 +45,6 @@ public class Controller3D {
 
     public void initiate() {
 
-        Vec3D e = new Vec3D(8, -5, 2);
-        Vec3D v = new Vec3D(-8, 5, -2);
-        Vec3D u = new Vec3D(0, 0, 1);
-        view = new Mat4ViewRH(e, v, u);
-
         orthoPro = new Mat4OrthoRH(
                 20,
                 20 * 0.75,
@@ -60,6 +58,8 @@ public class Controller3D {
                 1,
                 20
         );
+
+        shader = new BasicColorShader();
 
         reInitiate();
     }
@@ -76,21 +76,14 @@ public class Controller3D {
                 .withZenith(Math.toRadians(-30))
                 .withFirstPerson(true);
 
-        //TODO
-        // doesn't set camera?! Why?
-        // to test comment setView in display()
-        view = camera.getViewMatrix();
-        renderer.setView(view);
         projection = perspPro;
-        renderer.setProjection(perspPro);
-
-        System.out.println("Re");
     }
 
     public void createScene() {
         scene.addSolid(new Axis());
         scene.addSolid(new Cube(TopologyType.TRIANGLE));
         scene.addSolid(new Tetrahedron(TopologyType.TRIANGLE));
+        scene.addSolid(new Octahedron(TopologyType.TRIANGLE));
         scene.addSolid(new BicubicSolid(TopologyType.TRIANGLE));
     }
 
@@ -227,10 +220,13 @@ public class Controller3D {
         }
     }
 
-    public void display() {
+    public synchronized void display() {
         renderer.clear();
         renderer.setView(camera.getViewMatrix());
         renderer.setProjection(projection);
+
+        renderer.setShader(shader);
+
         draw();
         panel.repaint();
     }
@@ -252,6 +248,10 @@ public class Controller3D {
 
     public void setProjection(Mat4 projection) {
         this.projection = projection;
+    }
+
+    public void setShader(Shader<Vertex,Col> shader) {
+        this.shader = shader;
     }
 
 }
