@@ -18,7 +18,7 @@ public class TextureShader implements Shader<Vertex, Col> {
         // Load Image, use BufferedImage
 
         try {
-            File file = new File("assets/image/MomoMinion.png");
+            File file = new File("assets//image//MomoMinion.png");
             image = ImageIO.read(file);
         } catch (IOException e) {
             System.out.println("The image was not loaded.");

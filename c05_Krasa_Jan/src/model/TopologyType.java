@@ -1,5 +1,8 @@
 package model;
 
 public enum TopologyType {
-    POINT, LINE, TRIANGLE
+    POINT, LINE, LINESTRIP, LINELOOP, TRIANGLE, TRIANGLESTRIP, TRIANGLEFAN
 }
+
+
+

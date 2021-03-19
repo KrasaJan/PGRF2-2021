@@ -17,6 +17,10 @@ public class Scene {
         return solids;
     }
 
+    public Solid getSolid(Solid solid) {
+        return solid;
+    }
+
     public void addSolid(Solid solid) {
         solids.add(solid);
     }

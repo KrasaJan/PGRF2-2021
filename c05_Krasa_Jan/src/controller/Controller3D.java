@@ -1,7 +1,6 @@
 package controller;
 
 import model.Scene;
-import model.TopologyType;
 import model.Vertex;
 import model.solids.*;
 import rasterize.Raster;
@@ -20,6 +19,7 @@ public class Controller3D {
     private final Raster<Integer> imageRaster;
     private final GPURenderer renderer;
     private final Scene scene;
+    private Cube cube;
 
     private Mat4 model, projection, orthoPro, perspPro;
     private Shader<Vertex, Col> shader;
@@ -35,12 +35,12 @@ public class Controller3D {
         this.renderer = new RendererZBuffer(imageRaster);
         this.scene = new Scene();
 
-        initiate();
         createScene();
+        initiate();
         initListeners(panel);
         display();
 
-        new UI(panel, this, scene);
+        new GUI(panel, this, scene);
     }
 
     public void initiate() {
@@ -69,6 +69,8 @@ public class Controller3D {
         for (Solid solid : scene.getSolids()) {
             solid.setModel(model);
         }
+        /* Initial scaling of cube */
+        scene.getSolid(cube).setModel(scene.getSolid(cube).getModel().mul(new Mat4Scale(0.8)));
 
         camera = new Camera()
                 .withPosition(new Vec3D(4, 4, 4))
@@ -81,10 +83,11 @@ public class Controller3D {
 
     public void createScene() {
         scene.addSolid(new Axis());
-        scene.addSolid(new Cube(TopologyType.TRIANGLE));
-        scene.addSolid(new Tetrahedron(TopologyType.TRIANGLE));
-        scene.addSolid(new Octahedron(TopologyType.TRIANGLE));
-        scene.addSolid(new BicubicSolid(TopologyType.TRIANGLE));
+        cube = new Cube(true);
+        scene.addSolid(cube);
+        scene.addSolid(new Tetrahedron(true));
+        scene.addSolid(new Octahedron(true));
+        scene.addSolid(new BicubicSolid());
     }
 
     public void initListeners(Panel panel) {
@@ -224,7 +227,6 @@ public class Controller3D {
         renderer.clear();
         renderer.setView(camera.getViewMatrix());
         renderer.setProjection(projection);
-
         renderer.setShader(shader);
 
         draw();

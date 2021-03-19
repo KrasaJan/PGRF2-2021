@@ -17,9 +17,6 @@ public class Element {
         this.count = count;
     }
 
-    //TODO ?
-    // setTopologyType instead of recreating whole solid? Would require routines to change IB as well.
-
     public TopologyType getTopologyType() {
         return topologyType;
     }

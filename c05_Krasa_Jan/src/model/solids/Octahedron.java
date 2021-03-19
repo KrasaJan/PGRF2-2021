@@ -8,7 +8,7 @@ import transforms.Point3D;
 
 public class Octahedron extends Solid {
 
-    public Octahedron(TopologyType topologyType) {
+    public Octahedron(Boolean filled) {
 
         vertexBuffer.add(new Vertex(new Point3D(1, 1, 0), new Col(0, 0, 255)));
         vertexBuffer.add(new Vertex(new Point3D(1, -1, 0), new Col(0, 0, 255)));
@@ -18,22 +18,18 @@ public class Octahedron extends Solid {
         vertexBuffer.add(new Vertex(new Point3D(0, 0, 1), new Col(255, 0, 255)));
         vertexBuffer.add(new Vertex(new Point3D(0, 0, -1), new Col(255, 0, 0)));
 
-        if (topologyType == TopologyType.LINE) {
-            addIndices(0, 1, 1, 2, 2, 3, 3, 0);
-            addIndices(0, 4, 1, 4, 2, 4, 3, 4);
-            addIndices(0, 5, 1, 5, 2, 5, 3, 5);
-            elementBuffer.add(new Element(topologyType, 0, 24));
+        if (!filled) {
+            addIndices(0, 1, 2, 3);
+            elementBuffer.add(new Element(TopologyType.LINELOOP,0 , 4));
+            addIndices(0, 4, 1, 2, 4, 3);
+            addIndices(0, 5, 1, 2, 5, 3);
+            elementBuffer.add(new Element(TopologyType.LINESTRIP, 4, 12));
         }
-        if (topologyType == TopologyType.TRIANGLE) {
-            addIndices(0, 1, 4);
-            addIndices(0, 1, 5);
-            addIndices(1, 2, 4);
-            addIndices(1, 2, 5);
-            addIndices(2, 3, 4);
-            addIndices(2, 3, 5);
-            addIndices(0, 3, 4);
-            addIndices(0, 3, 5);
-            elementBuffer.add(new Element(topologyType, 0, 24));
+        if (filled) {
+            addIndices(4, 0, 1, 2, 3, 0);
+            elementBuffer.add(new Element(TopologyType.TRIANGLEFAN, 0, 6));
+            addIndices(5, 0, 1, 2, 3, 0);
+            elementBuffer.add(new Element(TopologyType.TRIANGLEFAN, 6, 6));
         }
 
     }

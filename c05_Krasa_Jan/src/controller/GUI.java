@@ -9,11 +9,12 @@ import model.solids.Tetrahedron;
 import transforms.Mat4;
 import util.BasicColorShader;
 import util.BlackWhiteColorShader;
+import util.TextureShader;
 import view.Panel;
 
 import javax.swing.*;
 
-public class UI {
+public class GUI {
 
     private final Controller3D controller3D;
     private final Scene scene;
@@ -23,7 +24,7 @@ public class UI {
     private JCheckBox JCubeT, JTetraT, JOctaT, JBicubicT;
     private JComboBox<String> JTopology, JShader;
 
-    public UI(Panel panel, Controller3D controller3D, Scene scene) {
+    public GUI(Panel panel, Controller3D controller3D, Scene scene) {
         this.controller3D = controller3D;
         this.scene = scene;
         cube = scene.getSolids().get(1);
@@ -88,7 +89,7 @@ public class UI {
         JTopology = new JComboBox<>(cb1Options);
         JTopology.setFocusable(false);
 
-        String[] cb2Options = {"Basic", "Black&White"};
+        String[] cb2Options = {"Basic", "Black&White", "Texture"};
         JShader = new JComboBox<>(cb2Options);
         JShader.setFocusable(false);
 
@@ -195,7 +196,7 @@ public class UI {
             /* Cube */
             model = cube.getModel();
             scene.removeSolid(cube);
-            cube = new Cube(TopologyType.TRIANGLE);
+            cube = new Cube(true);
             cube.setModel(model);
             scene.addSolid(cube);
             JCubeV.setSelected(true);
@@ -203,7 +204,7 @@ public class UI {
             /* Tetrahedron */
             model = tetra.getModel();
             scene.removeSolid(tetra);
-            tetra = new Tetrahedron(TopologyType.TRIANGLE);
+            tetra = new Tetrahedron(true);
             tetra.setModel(model);
             scene.addSolid(tetra);
             JTetraV.setSelected(true);
@@ -211,7 +212,7 @@ public class UI {
             /* Octahedron */
             model = octa.getModel();
             scene.removeSolid(octa);
-            octa = new Octahedron(TopologyType.TRIANGLE);
+            octa = new Octahedron(true);
             octa.setModel(model);
             scene.addSolid(octa);
             JOctaV.setSelected(true);
@@ -222,7 +223,7 @@ public class UI {
             /* Cube */
             model = cube.getModel();
             scene.removeSolid(cube);
-            cube = new Cube(TopologyType.LINE);
+            cube = new Cube(false);
             cube.setModel(model);
             scene.addSolid(cube);
             JCubeV.setSelected(true);
@@ -230,7 +231,7 @@ public class UI {
             /* Tetrahedron */
             model = tetra.getModel();
             scene.removeSolid(tetra);
-            tetra = new Tetrahedron(TopologyType.LINE);
+            tetra = new Tetrahedron(false);
             tetra.setModel(model);
             scene.addSolid(tetra);
             JTetraV.setSelected(true);
@@ -238,7 +239,7 @@ public class UI {
             /* Octahedron */
             model = octa.getModel();
             scene.removeSolid(octa);
-            octa = new Octahedron(TopologyType.LINE);
+            octa = new Octahedron(false);
             octa.setModel(model);
             scene.addSolid(octa);
             JOctaV.setSelected(true);
@@ -253,6 +254,9 @@ public class UI {
             controller3D.setShader(new BasicColorShader());
         } else if (JShader.getSelectedIndex() == 1) {
             controller3D.setShader(new BlackWhiteColorShader());
+        } else if (JShader.getSelectedIndex() == 2) {
+            //TODO
+            controller3D.setShader(new TextureShader());
         }
         controller3D.display();
     }

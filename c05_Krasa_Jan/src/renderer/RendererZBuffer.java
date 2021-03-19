@@ -36,7 +36,29 @@ public class RendererZBuffer implements GPURenderer {
             final int start = element.getStart();
             final int count = element.getCount();
 
-            if(topologyType == TopologyType.TRIANGLE) {
+            if (topologyType == TopologyType.TRIANGLEFAN) {
+                for (int i = start; i < start + (count - 2); i++) {
+                    final Integer i1 = indexBuffer.get(start);
+                    final Integer i2 = indexBuffer.get(i + 1);
+                    final Integer i3 = indexBuffer.get(i + 2);
+                    final Vertex v1 = vertexBuffer.get(i1);
+                    final Vertex v2 = vertexBuffer.get(i2);
+                    final Vertex v3 = vertexBuffer.get(i3);
+                    prepareTriangle(v1, v2, v3);
+                }
+            }
+            if (topologyType == TopologyType.TRIANGLESTRIP) {
+                for (int i = start; i < start + (count - 2); i++) {
+                    final Integer i1 = indexBuffer.get(i);
+                    final Integer i2 = indexBuffer.get(i + 1);
+                    final Integer i3 = indexBuffer.get(i + 2);
+                    final Vertex v1 = vertexBuffer.get(i1);
+                    final Vertex v2 = vertexBuffer.get(i2);
+                    final Vertex v3 = vertexBuffer.get(i3);
+                    prepareTriangle(v1, v2, v3);
+                }
+            }
+            if (topologyType == TopologyType.TRIANGLE) {
                 for (int i = start; i < start + count; i += 3) {
                     final Integer i1 = indexBuffer.get(i);
                     final Integer i2 = indexBuffer.get(i + 1);
@@ -45,6 +67,30 @@ public class RendererZBuffer implements GPURenderer {
                     final Vertex v2 = vertexBuffer.get(i2);
                     final Vertex v3 = vertexBuffer.get(i3);
                     prepareTriangle(v1, v2, v3);
+                }
+            }
+            if (topologyType == TopologyType.LINELOOP) {
+                int i;
+                for (i = start; i < start + (count - 1); i++) {
+                    final Integer i1 = indexBuffer.get(i);
+                    final Integer i2 = indexBuffer.get(i + 1);
+                    final Vertex v1 = vertexBuffer.get(i1);
+                    final Vertex v2 = vertexBuffer.get(i2);
+                    prepareLine(v1, v2);
+                }
+                final Integer i1 = indexBuffer.get(start);
+                final Integer i2 = indexBuffer.get(i);
+                final Vertex v1 = vertexBuffer.get(i1);
+                final Vertex v2 = vertexBuffer.get(i2);
+                prepareLine(v1, v2);
+            }
+            if (topologyType == TopologyType.LINESTRIP) {
+                for (int i = start; i < start + (count - 1); i++) {
+                    final Integer i1 = indexBuffer.get(i);
+                    final Integer i2 = indexBuffer.get(i + 1);
+                    final Vertex v1 = vertexBuffer.get(i1);
+                    final Vertex v2 = vertexBuffer.get(i2);
+                    prepareLine(v1, v2);
                 }
             }
             if (topologyType == TopologyType.LINE) {
