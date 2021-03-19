@@ -244,10 +244,12 @@ public class RendererZBuffer implements GPURenderer {
         } else if (c.getZ() < 0) {                          // Only c.Z is not visible.
             double t1 = (0 - b.getZ()) / (c.getZ() - b.getZ());
             Vertex bc = b.mul((1 - t1)).add(c.mul(t1));
+
             drawTriangle(a, b, bc);
 
             double t2 = (0 - a.getZ()) / (c.getZ() - a.getZ());
             Vertex ac = a.mul(1 - t2).add(c.mul(t2));
+
             drawTriangle(a, bc, ac);
         } else {                                            // Whole triangle is visible
             drawTriangle(a, b, c);
@@ -319,7 +321,7 @@ public class RendererZBuffer implements GPURenderer {
 
     /* Transforms coordinates using model, view and projection matrices */
     private Vertex transform(Vertex vertex) {
-        return new Vertex(vertex.getPoint().mul(model).mul(view).mul(projection), vertex.getColor());
+        return new Vertex(vertex.getPoint().mul(model).mul(view).mul(projection), vertex.getColor(), vertex.getTexCoord());
     }
 
     /* Transforms coordinates to window - moves center, shifty y axis */
@@ -332,7 +334,7 @@ public class RendererZBuffer implements GPURenderer {
                 // We got <0;2> => multiply by half the size of the window
                 .mul(new Vec3D(imageRaster.getWidth() / 2f, imageRaster.getHeight() / 2f, 1));
 
-        return new Vertex(new Point3D(vec3D), vertex.getColor());
+        return new Vertex(new Point3D(vec3D), vertex.getColor(), vertex.getTexCoord());
     }
 
     /* Draws lines */

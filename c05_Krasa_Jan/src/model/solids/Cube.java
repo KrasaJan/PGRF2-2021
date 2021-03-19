@@ -11,14 +11,14 @@ public class Cube extends Solid {
 
     public Cube(Boolean filled) {
 
-        vertexBuffer.add(new Vertex(new Point3D(1, -1, 1), new Col(255,167,0)));
+        vertexBuffer.add(new Vertex(new Point3D(1, -1, 1), new Col(255,167,0), new Vec2D(1,0)));
         vertexBuffer.add(new Vertex(new Point3D(1, 1, 1), new Col(255,167,0), new Vec2D(0,0)));
-        vertexBuffer.add(new Vertex(new Point3D(-1, 1, 1), new Col(255,167,0), new Vec2D(0,1)));
+        vertexBuffer.add(new Vertex(new Point3D(-1, 1, 1), new Col(255,167,0)));
         vertexBuffer.add(new Vertex(new Point3D(-1, -1, 1), new Col(255,167,0)));
 
-        vertexBuffer.add(new Vertex(new Point3D(1, -1, -1), new Col(255,255,0)));
+        vertexBuffer.add(new Vertex(new Point3D(1, -1, -1), new Col(255,255,0), new Vec2D(1,1)));
         vertexBuffer.add(new Vertex(new Point3D(1, 1, -1), new Col(255,255,0), new Vec2D(0,1)));
-        vertexBuffer.add(new Vertex(new Point3D(-1, 1, -1), new Col(255,255,0), new Vec2D(1,1)));
+        vertexBuffer.add(new Vertex(new Point3D(-1, 1, -1), new Col(255,255,0)));
         vertexBuffer.add(new Vertex(new Point3D(-1, -1, -1), new Col(255,255,0)));
 
         if (!filled) {
