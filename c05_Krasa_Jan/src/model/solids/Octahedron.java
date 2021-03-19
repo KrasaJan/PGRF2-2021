@@ -20,7 +20,7 @@ public class Octahedron extends Solid {
 
         if (!filled) {
             addIndices(0, 1, 2, 3);
-            elementBuffer.add(new Element(TopologyType.LINELOOP,0 , 4));
+            elementBuffer.add(new Element(TopologyType.LINELOOP, 0, 4));
             addIndices(0, 4, 1, 2, 4, 3);
             addIndices(0, 5, 1, 2, 5, 3);
             elementBuffer.add(new Element(TopologyType.LINESTRIP, 4, 12));

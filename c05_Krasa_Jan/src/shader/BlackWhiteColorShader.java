@@ -1,4 +1,4 @@
-package util;
+package shader;
 
 import model.Vertex;
 import transforms.Col;

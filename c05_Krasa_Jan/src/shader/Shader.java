@@ -1,4 +1,4 @@
-package util;
+package shader;
 
 @FunctionalInterface
 public interface Shader<V, C> {

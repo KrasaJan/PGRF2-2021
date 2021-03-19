@@ -4,7 +4,7 @@ import model.Element;
 import model.Vertex;
 import transforms.Col;
 import transforms.Mat4;
-import util.Shader;
+import shader.Shader;
 
 import java.util.List;
 

@@ -1,15 +1,11 @@
 package controller;
 
 import model.Scene;
-import model.TopologyType;
-import model.solids.Cube;
-import model.solids.Octahedron;
-import model.solids.Solid;
-import model.solids.Tetrahedron;
+import model.solids.*;
 import transforms.Mat4;
-import util.BasicColorShader;
-import util.BlackWhiteColorShader;
-import util.TextureShader;
+import shader.BasicColorShader;
+import shader.BlackWhiteColorShader;
+import shader.TextureShader;
 import view.Panel;
 
 import javax.swing.*;
@@ -18,8 +14,7 @@ public class GUI {
 
     private final Controller3D controller3D;
     private final Scene scene;
-    private final Solid bicubic;
-    private Solid cube, tetra, octa;
+    private Solid cube, tetra, octa, bicubic;
     private JCheckBox JCubeV, JTetraV, JOctaV, JBicubicV;
     private JCheckBox JCubeT, JTetraT, JOctaT, JBicubicT;
     private JComboBox<String> JTopology, JShader;
@@ -217,6 +212,14 @@ public class GUI {
             scene.addSolid(octa);
             JOctaV.setSelected(true);
             JOctaT.setSelected(true);
+            /* Bicubic */
+            model = bicubic.getModel();
+            scene.removeSolid(bicubic);
+            bicubic = new BicubicSolid(true);
+            bicubic.setModel(model);
+            scene.addSolid(bicubic);
+            JBicubicV.setSelected(true);
+            JBicubicT.setSelected(true);
 
             controller3D.display();
         } else if (JTopology.getSelectedIndex() == 1) {
@@ -244,6 +247,14 @@ public class GUI {
             scene.addSolid(octa);
             JOctaV.setSelected(true);
             JOctaT.setSelected(true);
+            /* Bicubic */
+            model = bicubic.getModel();
+            scene.removeSolid(bicubic);
+            bicubic = new BicubicSolid(false);
+            bicubic.setModel(model);
+            scene.addSolid(bicubic);
+            JBicubicV.setSelected(true);
+            JBicubicT.setSelected(true);
 
             controller3D.display();
         }
@@ -255,7 +266,6 @@ public class GUI {
         } else if (JShader.getSelectedIndex() == 1) {
             controller3D.setShader(new BlackWhiteColorShader());
         } else if (JShader.getSelectedIndex() == 2) {
-            //TODO
             controller3D.setShader(new TextureShader());
         }
         controller3D.display();

@@ -6,7 +6,7 @@ import model.Vertex;
 import rasterize.DepthBuffer;
 import rasterize.Raster;
 import transforms.*;
-import util.Shader;
+import shader.Shader;
 
 import java.util.List;
 import java.util.Optional;
@@ -130,7 +130,7 @@ public class RendererZBuffer implements GPURenderer {
         } else if (b.getZ() < 0) {                          // only b.Z is visible.
             double t1 = (0 - a.getZ()) / (b.getZ() - a.getZ());
             Vertex ab = a.mul(1 - t1).add(b.mul(t1));
-            
+
             drawLine(a, ab);
         } else {
             drawLine(a, b);
@@ -199,11 +199,11 @@ public class RendererZBuffer implements GPURenderer {
         Vertex c = transform(v3);
 
         // Cuts triangles completely outside of projection view
-        if (((a.getX() < -a.getW()) && (b.getX() < -b.getW()) && (c.getX() < -c.getW()))    ||     // Too far to the left
-                ((a.getX() > a.getW()) && (b.getX() > b.getW()) && (c.getX() > c.getW()))   ||     // Too far to the right
-                ((a.getY() < -a.getW()) && (b.getY() < -b.getW()) && (c.getY() < -c.getW()))||     // Too far up
-                ((a.getY() > a.getW()) && (b.getY() > b.getW()) && (c.getY() > c.getW()))   ||     // Too far down
-                ((a.getZ() < 0) && (b.getZ() < 0) && (c.getZ() < 0))                        ||     // Behind us
+        if (((a.getX() < -a.getW()) && (b.getX() < -b.getW()) && (c.getX() < -c.getW())) ||     // Too far to the left
+                ((a.getX() > a.getW()) && (b.getX() > b.getW()) && (c.getX() > c.getW())) ||     // Too far to the right
+                ((a.getY() < -a.getW()) && (b.getY() < -b.getW()) && (c.getY() < -c.getW())) ||     // Too far up
+                ((a.getY() > a.getW()) && (b.getY() > b.getW()) && (c.getY() > c.getW())) ||     // Too far down
+                ((a.getZ() < 0) && (b.getZ() < 0) && (c.getZ() < 0)) ||     // Behind us
                 ((a.getY() > a.getW()) && (b.getY() > b.getW()) && (c.getY() > c.getW()))) {       // Too far
             return;
         }
@@ -307,7 +307,7 @@ public class RendererZBuffer implements GPURenderer {
 
         // B -> C
         start = (long) Math.max(Math.ceil(b.getY()), 0);
-        end = Math.min(c.getY(), imageRaster.getHeight() -1);
+        end = Math.min(c.getY(), imageRaster.getHeight() - 1);
         for (long y = start; y <= end; y++) {
             double t1 = (y - b.getY()) / (c.getY() - b.getY());
             double t2 = (y - a.getY()) / (c.getY() - a.getY());
@@ -352,7 +352,7 @@ public class RendererZBuffer implements GPURenderer {
             Vertex finalVertex = a.mul(1 - t).add(b.mul(t));
 
             final Col finalColor = shader.shade(finalVertex);
-            drawPixel((int)x, (int)y, finalVertex.getZ(), finalColor);
+            drawPixel((int) x, (int) y, finalVertex.getZ(), finalColor);
         }
     }
 

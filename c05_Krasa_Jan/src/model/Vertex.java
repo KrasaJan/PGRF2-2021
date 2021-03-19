@@ -15,7 +15,7 @@ public class Vertex {
         this.point = point;
         this.color = color;
         // To ensure texture will apply only at triangles where all 3 textureCoordinates were defined.
-        this.texCoord = new Vec2D(Long.MIN_VALUE,Long.MIN_VALUE);
+        this.texCoord = new Vec2D(Long.MIN_VALUE, Long.MIN_VALUE);
     }
 
     public Vertex(Point3D point, Col color, Vec2D texCoord) {

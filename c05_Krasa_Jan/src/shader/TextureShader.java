@@ -1,8 +1,7 @@
-package util;
+package shader;
 
 import model.Vertex;
 import transforms.Col;
-import transforms.Vec2D;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

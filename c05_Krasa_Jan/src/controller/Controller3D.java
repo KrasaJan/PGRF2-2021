@@ -7,8 +7,8 @@ import rasterize.Raster;
 import renderer.GPURenderer;
 import renderer.RendererZBuffer;
 import transforms.*;
-import util.BasicColorShader;
-import util.Shader;
+import shader.BasicColorShader;
+import shader.Shader;
 import view.Panel;
 
 import java.awt.event.*;
@@ -87,7 +87,7 @@ public class Controller3D {
         scene.addSolid(cube);
         scene.addSolid(new Tetrahedron(true));
         scene.addSolid(new Octahedron(true));
-        scene.addSolid(new BicubicSolid());
+        scene.addSolid(new BicubicSolid(true));
     }
 
     public void initListeners(Panel panel) {
@@ -97,8 +97,12 @@ public class Controller3D {
             @Override
             /* Gets the coordinates of a click and remembers the button. */
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() == 1) { leftMB = true; }
-                if (e.getButton() == 3) { rightMB = true; }
+                if (e.getButton() == 1) {
+                    leftMB = true;
+                }
+                if (e.getButton() == 3) {
+                    rightMB = true;
+                }
                 ogX = e.getX();
                 ogY = e.getY();
             }
@@ -146,13 +150,13 @@ public class Controller3D {
                 if (rightMB) {
                     Mat4 rot = new Mat4Identity();
                     if (e.isControlDown()) {
-                        rot = new Mat4RotX(moveX * Math.PI/7200);
+                        rot = new Mat4RotX(moveX * Math.PI / 7200);
                     }
                     if (e.isShiftDown()) {
-                        rot = new Mat4RotY(moveX * Math.PI/7200);
+                        rot = new Mat4RotY(moveX * Math.PI / 7200);
                     }
                     if (e.isAltDown()) {
-                        rot = new Mat4RotZ(moveX * Math.PI/7200);
+                        rot = new Mat4RotZ(moveX * Math.PI / 7200);
                     }
                     computeModel(rot);
 
@@ -191,21 +195,54 @@ public class Controller3D {
             @Override
             /* Sets WSADQE movement of camera + IJKLUO movement of solids + R for reset button */
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_R) { reInitiate(); display(); }
+                if (e.getKeyCode() == KeyEvent.VK_R) {
+                    reInitiate();
+                    display();
+                }
 
-                if (e.getKeyCode() == KeyEvent.VK_W) { camera = camera.forward(step); }
-                if (e.getKeyCode() == KeyEvent.VK_S) { camera = camera.backward(step); }
-                if (e.getKeyCode() == KeyEvent.VK_A) { camera = camera.left(step); }
-                if (e.getKeyCode() == KeyEvent.VK_D) { camera = camera.right(step); }
-                if (e.getKeyCode() == KeyEvent.VK_Q) { camera = camera.up(step); }
-                if (e.getKeyCode() == KeyEvent.VK_E) { camera = camera.down(step); }
+                if (e.getKeyCode() == KeyEvent.VK_W) {
+                    camera = camera.forward(step);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_S) {
+                    camera = camera.backward(step);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_A) {
+                    camera = camera.left(step);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_D) {
+                    camera = camera.right(step);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_Q) {
+                    camera = camera.up(step);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_E) {
+                    camera = camera.down(step);
+                }
 
-                if (e.getKeyCode() == KeyEvent.VK_I) { Mat4 transl = new Mat4Transl(step,0,0); computeModel(transl); }
-                if (e.getKeyCode() == KeyEvent.VK_K) { Mat4 transl = new Mat4Transl(-step,0,0);computeModel(transl); }
-                if (e.getKeyCode() == KeyEvent.VK_J) { Mat4 transl = new Mat4Transl(0,-step,0);computeModel(transl); }
-                if (e.getKeyCode() == KeyEvent.VK_L) { Mat4 transl = new Mat4Transl(0,step,0); computeModel(transl); }
-                if (e.getKeyCode() == KeyEvent.VK_U) { Mat4 transl = new Mat4Transl(0,0,-step);computeModel(transl); }
-                if (e.getKeyCode() == KeyEvent.VK_O) { Mat4 transl = new Mat4Transl(0,0,step); computeModel(transl); }
+                if (e.getKeyCode() == KeyEvent.VK_I) {
+                    Mat4 transl = new Mat4Transl(step, 0, 0);
+                    computeModel(transl);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_K) {
+                    Mat4 transl = new Mat4Transl(-step, 0, 0);
+                    computeModel(transl);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_J) {
+                    Mat4 transl = new Mat4Transl(0, -step, 0);
+                    computeModel(transl);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_L) {
+                    Mat4 transl = new Mat4Transl(0, step, 0);
+                    computeModel(transl);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_U) {
+                    Mat4 transl = new Mat4Transl(0, 0, -step);
+                    computeModel(transl);
+                }
+                if (e.getKeyCode() == KeyEvent.VK_O) {
+                    Mat4 transl = new Mat4Transl(0, 0, step);
+                    computeModel(transl);
+                }
 
                 display();
             }
@@ -252,7 +289,7 @@ public class Controller3D {
         this.projection = projection;
     }
 
-    public void setShader(Shader<Vertex,Col> shader) {
+    public void setShader(Shader<Vertex, Col> shader) {
         this.shader = shader;
     }
 
