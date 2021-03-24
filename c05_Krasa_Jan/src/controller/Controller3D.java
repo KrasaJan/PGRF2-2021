@@ -43,7 +43,7 @@ public class Controller3D {
         new GUI(panel, this, scene);
     }
 
-    public void initiate() {
+    private void initiate() {
 
         orthoPro = new Mat4OrthoRH(
                 20,
@@ -64,7 +64,7 @@ public class Controller3D {
         reInitiate();
     }
 
-    public void reInitiate() {
+    private void reInitiate() {
         model = new Mat4Identity();
         for (Solid solid : scene.getSolids()) {
             solid.setModel(model);
@@ -81,7 +81,7 @@ public class Controller3D {
         projection = perspPro;
     }
 
-    public void createScene() {
+    private void createScene() {
         scene.addSolid(new Axis());
         cube = new Cube(true);
         scene.addSolid(cube);
@@ -90,7 +90,7 @@ public class Controller3D {
         scene.addSolid(new BicubicSolid(true));
     }
 
-    public void initListeners(Panel panel) {
+    private void initListeners(Panel panel) {
 
         panel.addMouseListener(new MouseAdapter() {
 
@@ -251,7 +251,7 @@ public class Controller3D {
     }
 
     /* Changes the model matrix of active solids. */
-    public void computeModel(Mat4 mat) {
+    private void computeModel(Mat4 mat) {
         for (Solid solid : scene.getSolids()) {
             if (solid.isTransformable()) {
                 model = solid.getModel().mul(mat);
@@ -260,7 +260,7 @@ public class Controller3D {
         }
     }
 
-    public synchronized void display() {
+    synchronized void display() {
         renderer.clear();
         renderer.setView(camera.getViewMatrix());
         renderer.setProjection(projection);
@@ -270,26 +270,26 @@ public class Controller3D {
         panel.repaint();
     }
 
-    public void draw() {
+    private void draw() {
         for (Solid solid : scene.getSolids()) {
             renderer.setModel(solid.getModel());
             renderer.draw(solid.getElementBuffer(), solid.getIndexBuffer(), solid.getVertexBuffer());
         }
     }
 
-    public Mat4 getOrthoPro() {
+    Mat4 getOrthoPro() {
         return orthoPro;
     }
 
-    public Mat4 getPerspPro() {
+    Mat4 getPerspPro() {
         return perspPro;
     }
 
-    public void setProjection(Mat4 projection) {
+    void setProjection(Mat4 projection) {
         this.projection = projection;
     }
 
-    public void setShader(Shader<Vertex, Col> shader) {
+    void setShader(Shader<Vertex, Col> shader) {
         this.shader = shader;
     }
 
